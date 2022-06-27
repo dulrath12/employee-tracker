@@ -1,17 +1,20 @@
-const inquirer = require('inquirer');
-const mysql = require('mysql');
-const cTable = require('console.table');
+const inquirer = require('inquirer')
+const mysql = require('mysql2')
+const cTable = require('console.table')
 require('dotenv').config()
 
-const connection = mysql.createConnection({
+const connection = mysql.createConnection(
+    {
     host: 'localhost',
     port: 3306,
     user: 'root',
     password: process.env.password,
     database: 'employeetracker',
-});
+},
+    console.log('connected to the employee database')
+);
 
-startApp = () => {
+const startApp = () => {
     inquirer.prompt([
         {
             name: 'initialInquiry',
@@ -70,7 +73,7 @@ startApp = () => {
     })
 }
 
-viewAllDepartments = () => {
+const viewAllDepartments = () => {
     connection.query(`SELECT * FROM department ORDER BY department_id ASC;`, (err, res) => {
         if (err) throw err;
         console.table('\n', res, '\n');
@@ -78,7 +81,7 @@ viewAllDepartments = () => {
     })
 };
 
-viewAllRoles = () => {
+const viewAllRoles = () => {
     connection.query(`SELECT role.role_id, role.title, role.salary, department.department_name, department.department_id FROM role JOIN department ON role.department_id = department.department_id ORDER BY role.role_id ASC;`, (err, res) => {
         if (err) throw err;
         console.table('\n', res, '\n');
@@ -86,7 +89,7 @@ viewAllRoles = () => {
     })
 };
 
-viewAllEmployees = () => {
+const viewAllEmployees = () => {
     connection.query(`SELECT e.employee_id, e.first_name, e.last_name, role.title, department.department_name, role.salary, CONCAT(m.first_name, ' ', m.last_name) manager FROM employee m RIGHT JOIN employee e ON e.manager_id = m.employee_id JOIN role ON e.role_id = role.role_id JOIN department ON department.department_id = role.department_id ORDER BY e.employee_id ASC;`, (err, res) => {
         if (err) throw err;
         console.table('\n', res, '\n');
@@ -94,7 +97,7 @@ viewAllEmployees = () => {
     })
 };
 
-viewAllEmployeesByManager = () => {
+const viewAllEmployeesByManager = () => {
     connection.query(`SELECT employee_id, first_name, last_name FROM employee ORDER BY employee_id ASC;`, (err, res) => {
         if (err) throw err;
         let managers = res.map(employee => ({name: employee.first_name + ' ' + employee.last_name, value: employee.employee_id }));
@@ -116,7 +119,7 @@ viewAllEmployeesByManager = () => {
     })
 }
 
-addADepartment = () => {
+const addADepartment = () => {
     inquirer.prompt([
         {
         name: 'newDept',
@@ -136,7 +139,7 @@ addADepartment = () => {
     })
 };
 
-addARole = () => {
+const addARole = () => {
     connection.query(`SELECT * FROM department;`, (err, res) => {
         if (err) throw err;
         let departments = res.map(department => ({name: department.department_name, value: department.department_id }));
@@ -173,7 +176,7 @@ addARole = () => {
     })
 };
 
-addAnEmployee = () => {
+const addAnEmployee = () => {
     connection.query(`SELECT * FROM role;`, (err, res) => {
         if (err) throw err;
         let roles = res.map(role => ({name: role.title, value: role.role_id }));
@@ -202,6 +205,7 @@ addAnEmployee = () => {
                     type: 'rawlist',
                     message: 'Who is the new employee\'s manager?',
                     choices: employees
+                    
                 }
             ]).then((response) => {
                 connection.query(`INSERT INTO employee SET ?`, 
@@ -228,7 +232,7 @@ addAnEmployee = () => {
     })
 };
 
-updateEmployeeRole = () => {
+const updateEmployeeRole = () => {
     connection.query(`SELECT * FROM role;`, (err, res) => {
         if (err) throw err;
         let roles = res.map(role => ({name: role.title, value: role.role_id }));
@@ -268,7 +272,7 @@ updateEmployeeRole = () => {
     })
 }
 
-updateEmployeesManager = () => {
+const updateEmployeesManager = () => {
     connection.query(`SELECT * FROM employee;`, (err, res) => {
         if (err) throw err;
         let employees = res.map(employee => ({name: employee.first_name + ' ' + employee.last_name, value: employee.employee_id }));
@@ -304,7 +308,7 @@ updateEmployeesManager = () => {
     })
 };
 
-removeADepartment = () => {
+const removeADepartment = () => {
     connection.query(`SELECT * FROM department ORDER BY department_id ASC;`, (err, res) => {
         if (err) throw err;
         let departments = res.map(department => ({name: department.department_name, value: department.department_id }));
@@ -331,7 +335,7 @@ removeADepartment = () => {
     })
 }
 
-removeARole = () => {
+const removeARole = () => {
     connection.query(`SELECT * FROM role ORDER BY role_id ASC;`, (err, res) => {
         if (err) throw err;
         let roles = res.map(role => ({name: role.title, value: role.role_id }));
@@ -358,7 +362,7 @@ removeARole = () => {
     })
 }
 
-removeAnEmployee = () => {
+const removeAnEmployee = () => {
     connection.query(`SELECT * FROM employee ORDER BY employee_id ASC;`, (err, res) => {
         if (err) throw err;
         let employees = res.map(employee => ({name: employee.first_name + ' ' + employee.last_name, value: employee.employee_id }));
@@ -385,7 +389,7 @@ removeAnEmployee = () => {
     })
 }
 
-viewDepartmentSalary = () => {
+const viewDepartmentSalary = () => {
     connection.query(`SELECT * FROM department ORDER BY department_id ASC;`, (err, res) => {
         if (err) throw err;
         let departments = res.map(department => ({name: department.department_name, value: department.department_id }));
@@ -412,3 +416,5 @@ viewDepartmentSalary = () => {
         })
     })
 }
+
+startApp()
